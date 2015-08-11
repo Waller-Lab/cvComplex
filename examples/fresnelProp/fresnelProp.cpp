@@ -35,7 +35,7 @@ int main(int argc, char** argv ){
 
 	std::string imgFname = argv[1];
 	double zDist = atof(argv[2]);
-	 
+	
 	// Load Image
 	Mat img = imread(imgFname, CV_64FC1); // Load image as 64-bit double
 	img.convertTo(img,CV_64FC1);
@@ -44,16 +44,17 @@ int main(int argc, char** argv ){
 	Mat kernel = Mat::zeros(img.rows,img.cols,img.type());
 	genFresnelKernel(img, kernel, zDist, 1.0/(img.cols*ps_eff), 1.0/(img.rows*ps_eff));
 	//showComplexImg(kernel, SHOW_COMPLEX_COMPONENTS, "Fresnel Kernel");
+	
+	showComplexImg(kernel, -2, "Fresnel Kernel");
+	
 
 	// Convolve with FT of image
 	Mat img_Ft;
 	fft2(img, img_Ft);
 	fftShift(img_Ft,img_Ft);
-	//img_Ft = fftShift(img_Ft);
 
 	Mat output_Ft;
 	complexMultiply(img_Ft, kernel, output_Ft);
-	//output_Ft = ifftShift(output_Ft);
 	fftShift(output_Ft,output_Ft);
 
 	Mat output;

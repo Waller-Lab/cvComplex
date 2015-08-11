@@ -295,131 +295,168 @@ void complex_imwrite(std::string fname, cv::Mat& m1)
 void onMouse( int event, int x, int y, int, void* param )
 {
 
-    cv::Mat* imgPtr = (cv::Mat*) param;
-    cv::Mat image;
-    imgPtr->copyTo(image);
+	cv::Mat* imgPtr = (cv::Mat*) param;
+	cv::Mat image;
+	imgPtr->copyTo(image);
+	image.convertTo(image,CV_64F); // to keep types consitant
 
-    
-    switch (event)
-    {
-       case ::CV_EVENT_LBUTTONDOWN:
-       {
-          cv::Mat planes[] = {cv::Mat::zeros(image.rows, image.cols, image.type()), cv::Mat::zeros(image.rows, image.cols, image.type())};
-          cv::split(image, planes);    
-        
-          printf("x:%d y:%d: %f + %fi\n", 
-          x, y, 
-          planes[0].at<double>(y,x), 
-          planes[1].at<double>(y,x));
-          break;
-       }
-       case ::CV_EVENT_RBUTTONDOWN:
-       {
-          cv::Mat planes[] = {cv::Mat::zeros(image.rows, image.cols, image.type()), cv::Mat::zeros(image.rows, image.cols, image.type())};
-          cv::split(image, planes);      
-          double minVal, maxVal;
-          cv::minMaxLoc(planes[0], &minVal, &maxVal);
-          std::cout << "Max/Min values of real part are: " << maxVal << ", " << minVal << std::endl;
-          cv::minMaxLoc(planes[1], &minVal, &maxVal);
-          std::cout << "Max/Min values of imaginary part are: " << maxVal << ", " << minVal << std::endl << std::endl;
-       break;
-       }
-       default:
-         return;
-   }
+	// Split image into channels
+	cv::Mat planes[image.channels()];
+	for (int16_t ch=0; ch < image.channels(); ch++)
+		planes[ch] = cv::Mat::zeros(image.rows, image.cols, image.type());
+	split(image,planes);
+
+	switch (event)
+	{
+		case ::CV_EVENT_LBUTTONDOWN:
+		{
+			// Pretty printing of complex matricies
+			if (image.channels() ==2)
+			{
+				std::printf("x:%d y:%d: \n", x, y);
+				std::printf("  %.4f + %.4fi\n",
+				planes[0].at<double>(y,x), 
+				planes[1].at<double>(y,x));
+			}
+			else //All other color channels
+			{
+				std::printf("x:%d y:%d: \n", x, y);
+				for (int16_t ch=0; ch < image.channels(); ch++)
+				{
+					std::printf("  Channel %d: %.4f \n",ch+1,planes[ch].at<double>(y,x));
+				}
+			}
+			std::cout<<std::endl;
+			break;
+		}
+		case ::CV_EVENT_RBUTTONDOWN:
+		{ 
+			double minVal, maxVal;
+			std::printf("x:%d y:%d: \n", x, y);
+			for (int16_t ch=0; ch < image.channels(); ch++)
+			{
+				cv::minMaxLoc(planes[ch], &minVal, &maxVal);
+				std::printf("  Channel %d: min: %.4f, max: %.4f \n",ch+1,minVal,maxVal);
+			}
+			std::cout<<std::endl;
+			break;
+		}
+	default:
+		return;
+	}
 }
 
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 {
-   cv::Mat planes[] = {cv::Mat::zeros(m.rows, m.cols, m.type()), cv::Mat::zeros(m.rows, m.cols, m.type())};
-   cv::split(m, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
-   cv::Mat displayMat = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
-   Mat displayMatR = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
-   Mat displayMatI = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
-   
-   switch(displayFlag)
+   if (m.channels() == 2) // Ensure Complex Matrix
    {
-   	case (SHOW_COMPLEX_MAG):
-   	{
-   		cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
-   		cv::Mat magI = planes[0];
-			magI += cv::Scalar::all(1);                    // switch to logarithmic scale
-			cv::log(magI, magI);
-			magI.convertTo(magI,CV_32FC1);
-			cvtColor(magI, displayMat, CV_GRAY2RGB);
-			cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
-			break;
-		}
-		case (SHOW_COMPLEX_REAL):
+		cv::Mat planes[] = {cv::Mat::zeros(m.rows, m.cols, m.type()), cv::Mat::zeros(m.rows, m.cols, m.type())};
+		cv::split(m, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+		cv::Mat displayMat = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
+		Mat displayMatR = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
+		Mat displayMatI = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
+		
+		switch(displayFlag)
 		{
-			cv::Mat scaledReal;
-			cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
-			scaledReal.convertTo(scaledReal,CV_32FC1);
-			cvtColor(scaledReal, displayMat, CV_GRAY2RGB);
-			cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
-		   
-		   std::string reWindowTitle = windowTitle + " Real";
-			cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
-			cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
-			cv::imshow(reWindowTitle, displayMat);
-			break;
-		}
-		case (SHOW_COMPLEX_IMAGINARY):
-		{
-			cv::Mat scaledImag;
-			cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
-			scaledImag.convertTo(scaledImag,CV_32FC1);
-			cvtColor(scaledImag, displayMat, CV_GRAY2RGB);
-			cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
-		   
-		   std::string imWindowTitle = windowTitle + " Imaginary";
-			cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
-			cv::setMouseCallback(imWindowTitle, onMouse, &planes[0]);
-			cv::imshow(imWindowTitle, displayMat);
-			break;
-		}
-		default:
-		{
-		   // Show complex components
-			cv::Mat scaledReal; cv::Mat scaledImag;
+			case (SHOW_COMPLEX_MAG):
+			{
+				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
+				cv::Mat magI = planes[0];
+				magI += cv::Scalar::all(1);                    // switch to logarithmic scale
+				cv::log(magI, magI);
+				magI.convertTo(magI,CV_32FC1);
+				cvtColor(magI, displayMat, CV_GRAY2RGB);
+				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
+				break;
+			}
+			case (SHOW_COMPLEX_REAL):
+			{
+				cv::Mat scaledReal;
+				cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
+				scaledReal.convertTo(scaledReal,CV_32FC1);
+				cvtColor(scaledReal, displayMat, CV_GRAY2RGB);
+				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
+				
+				std::string reWindowTitle = windowTitle + " Real";
+				cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
+				cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
+				cv::imshow(reWindowTitle, displayMat);
+				break;
+			}
+			case (SHOW_COMPLEX_IMAGINARY):
+			{
+				cv::Mat scaledImag;
+				cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
+				scaledImag.convertTo(scaledImag,CV_32FC1);
+				cvtColor(scaledImag, displayMat, CV_GRAY2RGB);
+				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
+				
+				std::string imWindowTitle = windowTitle + " Imaginary";
+				cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
+				cv::setMouseCallback(imWindowTitle, onMouse, &planes[0]);
+				cv::imshow(imWindowTitle, displayMat);
+				break;
+			}
+			/*
+			case (-2):
+			{
+				showImg(planes[0],"Jet Real Part");
+				break;
+			}
+			*/
+			default:
+			{
+				// Show complex components
+				cv::Mat scaledReal; cv::Mat scaledImag;
 			
-			cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
-			cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
-			scaledReal.convertTo(scaledReal,CV_32FC1);
-			scaledImag.convertTo(scaledImag,CV_32FC1);
-			cv::cvtColor(scaledReal, displayMatR, CV_GRAY2RGB);
-			cv::cvtColor(scaledImag, displayMatI, CV_GRAY2RGB);
-			cv::applyColorMap(displayMatR, displayMatR, COLORMAP_JET);
-			cv::applyColorMap(displayMatI, displayMatI, COLORMAP_JET);
-		   
-		   std::string reWindowTitle = windowTitle + " Real";
-		   std::string imWindowTitle = windowTitle + " Imaginary";
-			cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
-			cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
-			cv::imshow(reWindowTitle, displayMatR);
-			cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
-			cv::setMouseCallback(imWindowTitle, onMouse, &planes[1]);
-			cv::imshow(imWindowTitle, displayMatI);
-			break;
+				cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
+				cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
+				scaledReal.convertTo(scaledReal,CV_32FC1);
+				scaledImag.convertTo(scaledImag,CV_32FC1);
+				cv::cvtColor(scaledReal, displayMatR, CV_GRAY2RGB);
+				cv::cvtColor(scaledImag, displayMatI, CV_GRAY2RGB);
+				cv::applyColorMap(displayMatR, displayMatR, COLORMAP_JET);
+				cv::applyColorMap(displayMatI, displayMatI, COLORMAP_JET);
+				
+				std::string reWindowTitle = windowTitle + " Real";
+				std::string imWindowTitle = windowTitle + " Imaginary";
+				cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
+				cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
+				cv::imshow(reWindowTitle, displayMatR);
+				cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
+				cv::setMouseCallback(imWindowTitle, onMouse, &planes[1]);
+				cv::imshow(imWindowTitle, displayMatI);
+				break;
+			}
 		}
+		cv::waitKey();
+		cv::destroyAllWindows();
 	}
-	cv::waitKey();
-	cv::destroyAllWindows();	
+	else
+		std::cout << "ERROR (cvComplex::shotComplexImg() ) : Input Mat is not complex (m.channels() != 2)" << std::endl;	
 }
-/*
+
 void showImg(cv::Mat m, std::string windowTitle)
 {
-   cv::Mat scaled;
-	cv::normalize(m, scaled, 0, 1, CV_MINMAX);
-	scaled.convertTo(scaled,CV_16UC1);
-	cvtColor(scaled, scaled, CV_GRAY2RGB);
-	cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
+   m.convertTo(m,CV_32F);
+   cv::Mat scaledMat;
+	cv::normalize(m, scaledMat, 0.0, 255.0, CV_MINMAX);
+	scaledMat.convertTo(scaledMat, CV_16U);
+	cv::Mat displayMat;
+	cvtColor(scaledMat, scaledMat, CV_GRAY2RGB);
+	//cvtColor(m, m, CV_GRAY2RGB);
+
+	
+   std::cout<<m.type()<<std::endl;
+   std::cout<<scaledMat.type() << std::endl;
+	
+	cv::applyColorMap(scaledMat, displayMat, COLORMAP_COOL);
+	std::cout<<displayMat.type()<<std::endl;
    
-   std::string reWindowTitle = windowTitle + " Real";
-	cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
-	cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
-	cv::imshow(reWindowTitle, displayMat);
+   cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
+	cv::setMouseCallback(windowTitle, onMouse, &m);;
+	cv::imshow(windowTitle, displayMat);
 		
 	cv::waitKey();
 	cv::destroyAllWindows();	
-}*/
+}
