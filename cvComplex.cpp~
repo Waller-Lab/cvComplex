@@ -231,6 +231,7 @@ void fftShift(const cv::Mat& input, cv::Mat& output)
 	{
 		cv::Mat shifted = cv::Mat::zeros(input.cols, input.rows, input.type());
 		circularShift(input, shifted, std::ceil((double) input.cols/2), std::ceil((double) input.rows/2));
+		showComplexImg(shifted,-1,"fftshift2 Result");
 		output = shifted.clone();
 	}
 	else
@@ -243,6 +244,7 @@ void ifftShift(const cv::Mat& input, cv::Mat& output)
       {
       	cv::Mat shifted = cv::Mat::zeros(input.cols, input.rows, input.type());
          circularShift(input, shifted, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
+         showComplexImg(shifted,-1,"ifftshift2 Result");
          output = shifted.clone();
       }
       else
