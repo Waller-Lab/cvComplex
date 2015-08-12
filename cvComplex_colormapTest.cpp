@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <complex.h>
-#include "../../cvComplex.h" 
+#include "../cvComplex.h" 
 #include <math.h>
 
 using namespace std; using namespace cv;
@@ -58,6 +58,4 @@ int main(int argc, char** argv ){
 	ifft2(output_Ft, output );
 
 	showComplexImg(output, SHOW_COMPLEX_REAL, "Refocused Bug Hologram");
-	
-	
 } 

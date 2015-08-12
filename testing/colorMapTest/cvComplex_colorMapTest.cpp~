@@ -30,34 +30,14 @@ void genFresnelKernel(const Mat& input, Mat& kernelMat, double zDist, double du,
 }  
 
 int main(int argc, char** argv ){
-	if (argc < 1){
-			cout << "Error: Not enough inputs.\nUSAGE: ./fresnelProp image_filename refocus_distance" << endl; return 0;}
 
 	std::string imgFname = argv[1];
-	double zDist = atof(argv[2]);
 	
 	// Load Image
-	Mat img = imread(imgFname, CV_64FC1); // Load image as 64-bit double
-	img.convertTo(img,CV_64FC1);
+	Mat img = imread(imgFname); // Load image as 64-bit double
+	img.convertTo(img,CV_8U);
+	setColorMap(3);
+	showImg(img,"Hologram");
 
-	// Generate Kernel
-	Mat kernel = Mat::zeros(img.rows,img.cols,img.type());
-	genFresnelKernel(img, kernel, zDist, 1.0/(img.cols*ps_eff), 1.0/(img.rows*ps_eff));
-	//showComplexImg(kernel, SHOW_COMPLEX_COMPONENTS, "Fresnel Kernel");
-
-	// Convolve with FT of image
-	Mat img_Ft;
-	fft2(img, img_Ft);
-	fftShift(img_Ft,img_Ft);
-
-	Mat output_Ft;
-	complexMultiply(img_Ft, kernel, output_Ft);
-	fftShift(output_Ft,output_Ft);
-
-	Mat output;
-	ifft2(output_Ft, output );
-
-	showComplexImg(output, SHOW_COMPLEX_REAL, "Refocused Bug Hologram");
-	
-	
+   
 } 

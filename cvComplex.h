@@ -16,11 +16,6 @@
 #if !defined(CVCOMPLEX_CONSTANTS_H)
 #define CVCOMPLEX_CONSTANTS_H 1
 
-static const int16_t SHOW_COMPLEX_MAG = 0;
-static const int16_t SHOW_COMPLEX_COMPONENTS = 1; 
-static const int16_t SHOW_COMPLEX_REAL = 2; 
-static const int16_t SHOW_COMPLEX_IMAGINARY = 3; 
-
 void circularShift(cv::Mat img, cv::Mat result, int x, int y);
 void maxComplexReal(cv::Mat& m, std::string label);
 void complexConj(const cv::Mat& m, cv::Mat& output);
@@ -39,5 +34,6 @@ void complex_imwrite(std::string fname, cv::Mat& m1);
 void onMouse( int event, int x, int y, int, void* param);
 void showImg(cv::Mat m, std::string windowTitle);
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle);
+void setColorMap(int16_t cMap);
 
 #endif

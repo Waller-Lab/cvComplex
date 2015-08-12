@@ -22,6 +22,17 @@
 #include <vector>
 #include "cvComplex.h"
 
+static const int16_t SHOW_COMPLEX_MAG = 0;
+static const int16_t SHOW_COMPLEX_COMPONENTS = 1; 
+static const int16_t SHOW_COMPLEX_REAL = 2; 
+static const int16_t SHOW_COMPLEX_IMAGINARY = 3; 
+
+static const int16_t CMAP_MIN = 0;
+static const int16_t CMAP_MAX = 11;
+static const int16_t COLORMAP_NONE -1;
+
+int16_t gv_cMap = -1; // Global Colormap Setting
+
 using namespace cv;
 void circularShift(cv::Mat img, cv::Mat result, int x, int y){
     int w = img.cols;
@@ -303,9 +314,9 @@ void onMouse( int event, int x, int y, int, void* param )
 	// Split image into channels
 	cv::Mat planes[image.channels()];
 	for (int16_t ch=0; ch < image.channels(); ch++)
-		planes[ch] = cv::Mat::zeros(image.rows, image.cols, image.type());
+		planes[ch] = cv::Mat(image.rows, image.cols, image.type());
 	split(image,planes);
-
+	
 	switch (event)
 	{
 		case ::CV_EVENT_LBUTTONDOWN:
@@ -352,80 +363,37 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
    {
 		cv::Mat planes[] = {cv::Mat::zeros(m.rows, m.cols, m.type()), cv::Mat::zeros(m.rows, m.cols, m.type())};
 		cv::split(m, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
-		cv::Mat displayMat = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
-		Mat displayMatR = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
-		Mat displayMatI = cv::Mat::zeros(m.rows, m.cols, CV_32FC3);
 		
 		switch(displayFlag)
 		{
 			case (SHOW_COMPLEX_MAG):
 			{
 				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
-				cv::Mat magI = planes[0];
-				magI += cv::Scalar::all(1);                    // switch to logarithmic scale
-				cv::log(magI, magI);
-				magI.convertTo(magI,CV_32FC1);
-				cvtColor(magI, displayMat, CV_GRAY2RGB);
-				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
+            std::string windowTitle = windowTitle + " Magnitude";
+            showImg(planes[0], windowTitle);
 				break;
 			}
 			case (SHOW_COMPLEX_REAL):
 			{
-				cv::Mat scaledReal;
-				cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
-				scaledReal.convertTo(scaledReal,CV_32FC1);
-				cvtColor(scaledReal, displayMat, CV_GRAY2RGB);
-				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
-				
-				std::string reWindowTitle = windowTitle + " Real";
-				cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
-				cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
-				cv::imshow(reWindowTitle, displayMat);
+			   std::string reWindowTitle = windowTitle + " Real";
+            showImg(planes[0], reWindowTitle);
 				break;
 			}
 			case (SHOW_COMPLEX_IMAGINARY):
 			{
-				cv::Mat scaledImag;
-				cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
-				scaledImag.convertTo(scaledImag,CV_32FC1);
-				cvtColor(scaledImag, displayMat, CV_GRAY2RGB);
-				cv::applyColorMap(displayMat, displayMat, COLORMAP_JET);
-				
 				std::string imWindowTitle = windowTitle + " Imaginary";
-				cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
-				cv::setMouseCallback(imWindowTitle, onMouse, &planes[0]);
-				cv::imshow(imWindowTitle, displayMat);
+            showImg(planes[1], imWindowTitle);
 				break;
 			}
-			/*
-			case (-2):
-			{
-				showImg(planes[0],"Jet Real Part");
-				break;
-			}
-			*/
 			default:
 			{
-				// Show complex components
-				cv::Mat scaledReal; cv::Mat scaledImag;
-			
-				cv::normalize(planes[0], scaledReal, 0, 1, CV_MINMAX);
-				cv::normalize(planes[1], scaledImag, 0, 1, CV_MINMAX);
-				scaledReal.convertTo(scaledReal,CV_32FC1);
-				scaledImag.convertTo(scaledImag,CV_32FC1);
-				cv::cvtColor(scaledReal, displayMatR, CV_GRAY2RGB);
-				cv::cvtColor(scaledImag, displayMatI, CV_GRAY2RGB);
-				cv::applyColorMap(displayMatR, displayMatR, COLORMAP_JET);
-				cv::applyColorMap(displayMatI, displayMatI, COLORMAP_JET);
-				
+
 				std::string reWindowTitle = windowTitle + " Real";
 				std::string imWindowTitle = windowTitle + " Imaginary";
-				cv::namedWindow(reWindowTitle, cv::WINDOW_NORMAL);
-				cv::setMouseCallback(reWindowTitle, onMouse, &planes[0]);
-				cv::imshow(reWindowTitle, displayMatR);
-				cv::namedWindow(imWindowTitle, cv::WINDOW_NORMAL);
-				cv::setMouseCallback(imWindowTitle, onMouse, &planes[1]);
-				cv::imshow(imWindowTitle, displayMatI);
+				
+				showImg(planes[0], reWindowTitle);
+				showImg(planes[1], imWindowTitle);
+				
 				break;
 			}
 		}
@@ -433,30 +401,53 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 		cv::destroyAllWindows();
 	}
 	else
-		std::cout << "ERROR (cvComplex::shotComplexImg() ) : Input Mat is not complex (m.channels() != 2)" << std::endl;	
+		std::cout << "ERROR ( cvComplex::shotComplexImg ) : Input Mat is not complex (m.channels() != 2)" << std::endl;	
+}
+
+void printMat(cv::Mat m, std::string title)
+{
+	std::cout << "cv::Mat " << title<<" properties:"<<std::endl;
+	std::cout << "  sz: " <<m.cols<< " x " <<m.rows<<std::endl;
+	std::cout << "  depth: "<<m.depth()<<", channels: " <<m.channels()<<std::endl;
+	std::cout << "  type: "<<m.type()<<std::endl;
 }
 
 void showImg(cv::Mat m, std::string windowTitle)
 {
-   m.convertTo(m,CV_32F);
-   cv::Mat scaledMat;
-	cv::normalize(m, scaledMat, 0.0, 255.0, CV_MINMAX);
-	scaledMat.convertTo(scaledMat, CV_16U);
-	cv::Mat displayMat;
-	cvtColor(scaledMat, scaledMat, CV_GRAY2RGB);
-	//cvtColor(m, m, CV_GRAY2RGB);
-
+   cv::Mat scaledMat, displayMat;
+	cv::normalize(m, scaledMat, 0,255, CV_MINMAX);
+	scaledMat.convertTo(scaledMat, CV_8U);
 	
-   std::cout<<m.type()<<std::endl;
-   std::cout<<scaledMat.type() << std::endl;
-	
-	cv::applyColorMap(scaledMat, displayMat, COLORMAP_COOL);
-	std::cout<<displayMat.type()<<std::endl;
-   
+	if (gv_cMap >= 0)
+		cv::applyColorMap(scaledMat, displayMat, gv_cMap);
+   else
+   	displayMat = scaledMat;
+   	
    cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
 	cv::setMouseCallback(windowTitle, onMouse, &m);;
 	cv::imshow(windowTitle, displayMat);
 		
 	cv::waitKey();
 	cv::destroyAllWindows();	
+}
+/*
+    COLORMAP_AUTUMN = 0,
+    COLORMAP_BONE = 1,
+    COLORMAP_JET = 2,
+    COLORMAP_WINTER = 3,
+    COLORMAP_RAINBOW = 4,
+    COLORMAP_OCEAN = 5,
+    COLORMAP_SUMMER = 6,
+    COLORMAP_SPRING = 7,
+    COLORMAP_COOL = 8,
+    COLORMAP_HSV = 9,
+    COLORMAP_PINK = 10,
+    COLORMAP_HOT = 11
+    */
+void setColorMap(int16_t cMap)
+{
+	if (cMap >= CMAP_MIN && cMap <= CMAP_MAX)
+		gv_cMap = cMap;
+	else
+		std::cout << "ERROR ( cvComplex::setColorMap )  : Invalid Color Map (Valid Values are between " << CMAP_MIN <<" and " << CMAP_MAX << std::endl;
 }

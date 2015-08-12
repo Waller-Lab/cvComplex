@@ -44,9 +44,6 @@ int main(int argc, char** argv ){
 	Mat kernel = Mat::zeros(img.rows,img.cols,img.type());
 	genFresnelKernel(img, kernel, zDist, 1.0/(img.cols*ps_eff), 1.0/(img.rows*ps_eff));
 	//showComplexImg(kernel, SHOW_COMPLEX_COMPONENTS, "Fresnel Kernel");
-	
-	showComplexImg(kernel, -2, "Fresnel Kernel");
-	
 
 	// Convolve with FT of image
 	Mat img_Ft;
