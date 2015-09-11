@@ -29,7 +29,7 @@ static const int16_t SHOW_COMPLEX_IMAGINARY = 3;
 
 static const int16_t CMAP_MIN = 0;
 static const int16_t CMAP_MAX = 11;
-static const int16_t COLORMAP_NONE -1;
+static const int16_t COLORMAP_NONE =-1;
 
 int16_t gv_cMap = -1; // Global Colormap Setting
 
@@ -207,7 +207,7 @@ void complexInverse(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
    // (a+bi) / (c+di) = (ac+bd) / (c^2+d^2) + (bc-ad) / (c^2+d^2) * i
 	for(int i = 0; i < m1.rows; i++) // loop through y
 	{
-    const double* m1_i = m1.ptr<double>(i);   // Input 1
+    //const double* m1_i = m1.ptr<double>(i);   // Input 1
     const double* m2_i = m2.ptr<double>(i);   // Input 2
     double* o_i = output.ptr<double>(i);      // Output
     for(int j = 0; j < m1.cols; j++)
@@ -312,7 +312,7 @@ void onMouse( int event, int x, int y, int, void* param )
 	image.convertTo(image,CV_64F); // to keep types consitant
 
 	// Split image into channels
-	cv::Mat planes[image.channels()];
+	cv::Mat* planes = new cv::Mat[image.channels()];
 	for (int16_t ch=0; ch < image.channels(); ch++)
 		planes[ch] = cv::Mat(image.rows, image.cols, image.type());
 	split(image,planes);
@@ -369,7 +369,7 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 			case (SHOW_COMPLEX_MAG):
 			{
 				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
-            std::string windowTitle = windowTitle + " Magnitude";
+            windowTitle = windowTitle + " Magnitude";
             showImg(planes[0], windowTitle);
 				break;
 			}
