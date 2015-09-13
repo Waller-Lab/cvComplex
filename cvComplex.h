@@ -16,6 +16,15 @@
 #if !defined(CVCOMPLEX_CONSTANTS_H)
 #define CVCOMPLEX_CONSTANTS_H 1
 
+extern const int16_t SHOW_COMPLEX_MAG;
+extern const int16_t SHOW_COMPLEX_COMPONENTS; 
+extern const int16_t SHOW_COMPLEX_REAL; 
+extern const int16_t SHOW_COMPLEX_IMAGINARY; 
+
+extern const int16_t CMAP_MIN;
+extern const int16_t CMAP_MAX;
+extern const int16_t COLORMAP_NONE;
+
 void circularShift(cv::Mat img, cv::Mat result, int x, int y);
 void maxComplexReal(cv::Mat& m, std::string label);
 void complexConj(const cv::Mat& m, cv::Mat& output);
@@ -24,8 +33,6 @@ void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
 void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output);
 void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
 void complexInverse(const cv::Mat& m, cv::Mat& inverse);
-//cv::Mat fftShift(cv::Mat m);
-//cv::Mat ifftShift(cv::Mat m);
 void fftShift(const cv::Mat& input, cv::Mat& output);
 void ifftShift(const cv::Mat& input, cv::Mat& output);
 void fft2(cv::Mat& input, cv::Mat& output);

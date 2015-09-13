@@ -22,14 +22,14 @@
 #include <vector>
 #include "cvComplex.h"
 
-static const int16_t SHOW_COMPLEX_MAG = 0;
-static const int16_t SHOW_COMPLEX_COMPONENTS = 1; 
-static const int16_t SHOW_COMPLEX_REAL = 2; 
-static const int16_t SHOW_COMPLEX_IMAGINARY = 3; 
+const int16_t SHOW_COMPLEX_MAG = 0;
+const int16_t SHOW_COMPLEX_COMPONENTS = 1; 
+const int16_t SHOW_COMPLEX_REAL = 2; 
+const int16_t SHOW_COMPLEX_IMAGINARY = 3; 
 
-static const int16_t CMAP_MIN = 0;
-static const int16_t CMAP_MAX = 11;
-static const int16_t COLORMAP_NONE =-1;
+const int16_t CMAP_MIN = 0;
+const int16_t CMAP_MAX = 11;
+const int16_t COLORMAP_NONE =-1;
 
 int16_t gv_cMap = -1; // Global Colormap Setting
 
