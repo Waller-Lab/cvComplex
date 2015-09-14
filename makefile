@@ -26,3 +26,4 @@ clean:
 	
 install:
 	cp *.a /usr/lib/
+	cp *.h /usr/include/
