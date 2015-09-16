@@ -313,7 +313,7 @@ void onMouse( int event, int x, int y, int, void* param )
 	image.convertTo(image,CV_64F); // to keep types consitant
 
 	// Split image into channels
-	cv::Mat planes[image.channels()];
+	cv::Mat *  planes= new cv::Mat[image.channels()];
 	for (int16_t ch=0; ch < image.channels(); ch++)
 		planes[ch] = cv::Mat(image.rows, image.cols, image.type());
 	split(image,planes);
@@ -370,7 +370,7 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 			case (SHOW_COMPLEX_MAG):
 			{
 				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
-            std::string windowTitle = windowTitle + " Magnitude";
+            windowTitle = windowTitle + " Magnitude";
             showImg(planes[0], windowTitle);
 				break;
 			}
