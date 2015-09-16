@@ -415,7 +415,10 @@ void printMat(cv::Mat m, std::string title)
 
 void showImg(cv::Mat m, std::string windowTitle)
 {
-   cv::Mat scaledMat, displayMat;
+   cv::Mat scaledImg, displayMat;
+   cv::normalize(m, scaledImg, 0, 1, CV_MINMAX);
+   scaledImg.convertTo(scaledImg,CV_32FC1);
+   cvtColor(scaledImg, displayMat, CV_GRAY2RGB);
    /*
 	cv::normalize(m, scaledMat, 0,255, CV_MINMAX);
 	scaledMat.convertTo(scaledMat, CV_8U);
@@ -426,7 +429,7 @@ void showImg(cv::Mat m, std::string windowTitle)
    	displayMat = scaledMat;
    	*/
    	
-   cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
+    cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
 	cv::setMouseCallback(windowTitle, onMouse, &m);;
 	cv::imshow(windowTitle, displayMat);
 		
