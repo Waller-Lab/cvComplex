@@ -13,20 +13,23 @@ CFLAGS= -std=c++14 -ggdb
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I.
+INCLUDES = 
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
-#   their path using -Lpath, something like:
+#   their path using -Lpath
 LFLAGS =
+
+# define static libraries
+STATIC_LIBS = 
 
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_contrib
+LIBS =  -lcvComplex -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_contrib
 
 # define the C source files
-SRCS = fresnelProp.cpp ../../cvComplex.cpp
+SRCS = fresnelProp.cpp
 
 # define the C object files 
 #
@@ -49,9 +52,9 @@ MAIN = fresnelProp
 
 .PHONY: depend clean
 
-all:$(MAIN)
+all: $(MAIN) $(STATIC_LIBS)
 
-$(MAIN): $(OBJS) 
+$(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJS) $(LFLAGS) $(LIBS)
 
 # this is a suffix replacement rule for building .o's from .c's
