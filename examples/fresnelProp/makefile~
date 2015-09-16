@@ -26,7 +26,7 @@ STATIC_LIBS =
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS =  -lcvComplex -lopencv_core -lopencv_imgproc -lopencv_highgui
+LIBS =  -lcvComplex -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_contrib
 
 # define the C source files
 SRCS = fresnelProp.cpp

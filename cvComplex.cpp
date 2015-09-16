@@ -10,7 +10,6 @@
  * Report bugs directly to zkphil@berkeley.edu
  */
  
-#include "opencv2/contrib/contrib.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -34,6 +33,7 @@ const int16_t CMAP_MAX = 11;
 const int16_t COLORMAP_NONE = -1;
 
 using namespace cv;
+using namespace std;
 
 void circularShift(cv::Mat img, cv::Mat result, int x, int y){
     int w = img.cols;
@@ -416,6 +416,7 @@ void printMat(cv::Mat m, std::string title)
 void showImg(cv::Mat m, std::string windowTitle)
 {
    cv::Mat scaledMat, displayMat;
+   /*
 	cv::normalize(m, scaledMat, 0,255, CV_MINMAX);
 	scaledMat.convertTo(scaledMat, CV_8U);
 	
@@ -423,6 +424,7 @@ void showImg(cv::Mat m, std::string windowTitle)
 		cv::applyColorMap(scaledMat, displayMat, gv_cMap);
    else
    	displayMat = scaledMat;
+   	*/
    	
    cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
 	cv::setMouseCallback(windowTitle, onMouse, &m);;
@@ -444,11 +446,11 @@ void showImg(cv::Mat m, std::string windowTitle)
     COLORMAP_HSV = 9,
     COLORMAP_PINK = 10,
     COLORMAP_HOT = 11
-    */
+    
 void setColorMap(int16_t cMap)
 {
 	if (cMap >= CMAP_MIN && cMap <= CMAP_MAX)
 		gv_cMap = cMap;
 	else
 		std::cout << "ERROR ( cvComplex::setColorMap )  : Invalid Color Map (Valid Values are between " << CMAP_MIN <<" and " << CMAP_MAX << std::endl;
-}
+}*/
