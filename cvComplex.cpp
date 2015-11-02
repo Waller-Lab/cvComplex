@@ -102,7 +102,7 @@ void complexConj(const cv::Mat& m, cv::Mat& output)
 void complexAngle(const cv::Mat& m, cv::Mat& output)
 {
   if (output.empty())
-   output = cv::Mat::zeros(m.rows, m.cols, CV_64FC1);
+   output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
 
   for(int i = 0; i < m.rows; i++) // loop through y
  	{
@@ -111,7 +111,8 @@ void complexAngle(const cv::Mat& m, cv::Mat& output)
 
      for(int j = 0; j < m.cols; j++)
      {
-         o_i[j] = (double) atan2(m_i[j*2+1],m_i[j*2]);
+         o_i[2*j] = (double) atan2(m_i[j*2+1],m_i[j*2]);
+         o_i[j*2+1] = 0.0;
      }
  	}
 }
@@ -390,13 +391,18 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 			}
       case (SHOW_AMP_PHASE):
       {
+        Mat m2;
+        cv::Mat planes2[] = {cv::Mat::zeros(m.rows, m.cols, m.type()), cv::Mat::zeros(m.rows, m.cols, m.type())};
+        complexAngle(m,m2);
+        cv::split(m2, planes2);
+
         std::string amWindowTitle = windowTitle + " Amplitude";
-        complexAbs(planes[0],planes[0]);
         std::string phWindowTitle = windowTitle + " Phase";
-        complexAngle(planes[1],planes[1]);
+        complexAbs(m,m);
+        cv::split(m, planes);
 
         showImg(planes[0], amWindowTitle);
-        showImg(planes[1], phWindowTitle);
+        showImg(planes2[0], phWindowTitle);
         break;
       }
 			default:

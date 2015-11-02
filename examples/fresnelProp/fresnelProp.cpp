@@ -58,4 +58,5 @@ int main(int argc, char** argv ){
 	ifft2(output_Ft, output );
 
 	showComplexImg(output, SHOW_COMPLEX_REAL, "Refocused Bug Hologram");
+    std::cout << "done!" <<std::endl;
 } 
