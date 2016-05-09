@@ -62,14 +62,14 @@ void circularShift(cv::Mat img, cv::Mat result, int x, int y){
     cv::Rect gate4(w-shiftR, h-shiftD, shiftR, shiftD);
     cv::Rect out4(0, 0, shiftR, shiftD);
 
-    cv::Mat shift1 = img ( gate1 );
-	 cv::Mat shift2 = img ( gate2 );
-	 cv::Mat shift3 = img ( gate3 );
-	 cv::Mat shift4 = img ( gate4 );
-	 shift1.copyTo(cv::Mat(result, out1));
-	 shift2.copyTo(cv::Mat(result, out2));
-	 shift3.copyTo(cv::Mat(result, out3));
-	 shift4.copyTo(cv::Mat(result, out4));
+    cv::Mat shift1 = img(gate1);
+	cv::Mat shift2 = img(gate2);
+	cv::Mat shift3 = img(gate3);
+	cv::Mat shift4 = img(gate4);
+	shift1.copyTo(cv::Mat(result, out1));
+	shift2.copyTo(cv::Mat(result, out2));
+	shift3.copyTo(cv::Mat(result, out3));
+	shift4.copyTo(cv::Mat(result, out4));
 }
 
 void maxComplexReal(cv::Mat& m, std::string label)
@@ -253,7 +253,7 @@ void ifftShift(const cv::Mat& input, cv::Mat& output)
 {
       if ((input.data == output.data) || output.empty())
       {
-      	cv::Mat shifted = cv::Mat::zeros(input.cols, input.rows, input.type());
+      	 cv::Mat shifted = cv::Mat::zeros(input.cols, input.rows, input.type());
          circularShift(input, shifted, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
          output = shifted.clone();
       }
