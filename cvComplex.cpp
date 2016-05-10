@@ -300,18 +300,20 @@ void ifftShift(const cv::Mat& input, cv::Mat& output)
 // Opencv fft implimentation
 void fft2(cv::Mat& input, cv::Mat& output)
 {
-   cv::Mat paddedInput;
-   int m = cv::getOptimalDFTSize( input.rows );
-   int n = cv::getOptimalDFTSize( input.cols );
+   //cv::Mat paddedInput;
+   //int m = cv::getOptimalDFTSize( input.rows );
+   //int n = cv::getOptimalDFTSize( input.cols );
 
    // Zero pad for Speed
-   cv::copyMakeBorder(input, paddedInput, 0, m - input.rows, 0, n - input.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
-   cv::dft(paddedInput, output, cv::DFT_COMPLEX_OUTPUT);
+   //cv::copyMakeBorder(input, paddedInput, 0, m - input.rows, 0, n - input.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+   //cv::dft(paddedInput, output, cv::DFT_COMPLEX_OUTPUT);
+    cv::dft(input, output, cv::DFT_COMPLEX_OUTPUT);
 }
 
 // Inverse Fourier Transform
 void ifft2(cv::Mat& input, cv::Mat& output)
 {
+    /*
    cv::Mat paddedInput;
    int m = cv::getOptimalDFTSize( input.rows );
    int n = cv::getOptimalDFTSize( input.cols );
@@ -319,6 +321,10 @@ void ifft2(cv::Mat& input, cv::Mat& output)
    // Zero pad for speed
    cv::copyMakeBorder(input, paddedInput, 0, m - input.rows, 0, n - input.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
    cv::dft(paddedInput, output, cv::DFT_INVERSE | cv::DFT_COMPLEX_OUTPUT | cv::DFT_SCALE); // Real-space of object
+*/
+    cv::dft(input, output, cv::DFT_INVERSE | cv::DFT_COMPLEX_OUTPUT | cv::DFT_SCALE);
+    
+    
 }
 
 // Write complex matrix to file
