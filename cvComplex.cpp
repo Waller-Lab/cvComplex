@@ -13,12 +13,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include <iostream>
-#include <string>
-#include <stdio.h>
-#include <dirent.h>
-#include <fstream>
-#include <vector>
 #include "cvComplex.h"
 #include <cmath>
 
@@ -29,6 +23,9 @@ const int16_t SHOW_COMPLEX_COMPONENTS = 1;
 const int16_t SHOW_COMPLEX_REAL = 2;
 const int16_t SHOW_COMPLEX_IMAGINARY = 3;
 const int16_t SHOW_AMP_PHASE = 4;
+
+const int16_t RW_MODE_AMP_PHASE = 1;
+const int16_t RW_MODE_REAL_IMAG = 2;
 
 const int16_t CMAP_MIN = 0;
 const int16_t CMAP_MAX = 11;
@@ -137,6 +134,26 @@ void complexAbs(const cv::Mat& m, cv::Mat& output)
 	}
 }
 
+void complexAmpPhaseToRealImag(const cv::Mat& m, cv::Mat& output)
+{
+
+   if (output.empty())
+   	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
+
+	for(int i = 0; i < m.rows; i++) // loop through y
+	{
+    const double* m_i = m.ptr<double>(i);  // Input
+    double* o_i = output.ptr<double>(i);   // Output
+
+    for(int j = 0; j < m.cols; j++)
+    {
+
+        o_i[j*2] = (double)m_i[j*2]*sin((double)m_i[j*2+1]);
+        o_i[j*2+1] = (double)m_i[j*2]*cos((double)m_i[j*2+1]);
+    }
+	}
+}
+
 /* complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
  * Multiplies 2 complex matricies where the first two color channels are the
  * real and imaginary coefficents, respectivly. Uses the equation:
@@ -146,7 +163,7 @@ void complexAbs(const cv::Mat& m, cv::Mat& output)
  *   const cv::Mat& m1:  Complex Matrix 1
  *   const cv::Mat& m2:  Complex Matrix 2
  * OUTPUT:
- *   cv::Mat& outpit:    Complex Product of m1 and m2
+ *   cv::Mat& output:    Complex Product of m1 and m2
  */
 void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 {
@@ -166,6 +183,15 @@ void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 	}
 }
 
+/* complexScalarMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
+ * Multiplies the real and imaginary parts of a complex matrix by a scalar.
+ *
+ * INPUTS:
+ *   double scalar:      Scalar to multiply
+ *   const cv::Mat& m1:  Complex matrix input
+ * OUTPUT:
+ *   cv::Mat& output:    Complex product of m1 and scalar
+ */
 void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output)
 {
    if (output.empty())
@@ -183,6 +209,17 @@ void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output)
 	}
 }
 
+/* complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
+ * Divides one matrix by another where the first two color channels are the
+ * real and imaginary coefficents, respectivly. Uses the equation:
+ *   (a+bi) / (c+di) = (ac+bd) / (c^2+d^2) + (bc-ad) / (c^2+d^2) * i
+ *
+ * INPUTS:
+ *   const cv::Mat& m1:  Complex Matrix 1
+ *   const cv::Mat& m2:  Complex Matrix 2
+ * OUTPUT:
+ *   cv::Mat& output:    Complex Product of m1 and m2
+ */
 void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 {
    if (output.empty())
@@ -200,6 +237,7 @@ void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
     }
 	}
 }
+
 
 void complexInverse(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 {
@@ -220,8 +258,6 @@ void complexInverse(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 }
 
 // Depreciated fftshift methods
-
-
 cv::Mat fftShiftS(cv::Mat m)
 {
       cv::Mat shifted = cv::Mat(m.cols,m.rows,m.type());
@@ -261,13 +297,6 @@ void ifftShift(const cv::Mat& input, cv::Mat& output)
        	circularShift(input, output, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
 }
 
-/*
-void ifftShift2(const cv::Mat& input, cv::Mat& output)
-{
-	circularShift(input, output, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
-	showComplexImg(output,-1,"ifftshift2 Result");
-}
-*/
 // Opencv fft implimentation
 void fft2(cv::Mat& input, cv::Mat& output)
 {
@@ -280,7 +309,7 @@ void fft2(cv::Mat& input, cv::Mat& output)
    cv::dft(paddedInput, output, cv::DFT_COMPLEX_OUTPUT);
 }
 
-// Opencv ifft implimentation
+// Inverse Fourier Transform
 void ifft2(cv::Mat& input, cv::Mat& output)
 {
    cv::Mat paddedInput;
@@ -292,19 +321,50 @@ void ifft2(cv::Mat& input, cv::Mat& output)
    cv::dft(paddedInput, output, cv::DFT_INVERSE | cv::DFT_COMPLEX_OUTPUT | cv::DFT_SCALE); // Real-space of object
 }
 
-void complex_imwrite(std::string fname, cv::Mat& m1)
+// Write complex matrix to file
+void complex_imwrite(cv::Mat& m1,std::string fname, int16_t rwMode)
 {
-   cv::Mat outputPlanes[] = {cv::Mat::zeros(m1.rows, m1.cols, m1.type()), cv::Mat::zeros(m1.rows, m1.cols, m1.type()),cv::Mat::zeros(m1.rows, m1.cols, m1.type())};
-   cv::Mat inputPlanes[] = {cv::Mat::zeros(m1.rows, m1.cols, m1.type()), cv::Mat::zeros(m1.rows, m1.cols, m1.type())};
-
-   cv::split(m1,inputPlanes);
-   outputPlanes[0] = inputPlanes[0];
-   outputPlanes[1] = inputPlanes[1];
-   cv::Mat outMat;
-   cv::merge(outputPlanes,3,outMat);
-   cv::imwrite(fname,outMat);
+    cv::Mat complexPlanes[] = {cv::Mat::zeros(m1.rows, m1.cols, m1.type()), cv::Mat::zeros(m1.rows, m1.cols, m1.type())};
+    std::string typeStr1;
+    std::string typeStr2;
+    if (rwMode & RW_MODE_AMP_PHASE)
+    {
+        complexAbs(m1,complexPlanes[0]);
+        complexAngle(m1,complexPlanes[1]);
+        typeStr1 = "Amp"; typeStr2 = "Phase";
+    }
+    else if (rwMode & RW_MODE_REAL_IMAG)
+    {
+        cv::split(m1,complexPlanes);
+        typeStr1 = "Real"; typeStr2 = "Imag";
+    }
+    cv::imwrite(fname+'_'+typeStr1,complexPlanes[0]);
+    cv::imwrite(fname+'_'+typeStr2,complexPlanes[1]);
 }
 
+// Read a complex image from two matricies
+void complex_imread(std::string fNameAmp, std::string fNamePhase, cv::Mat& output, int16_t rwMode)
+{
+    Mat m1 = cv::imread(fNameAmp,-1*CV_LOAD_IMAGE_ANYDEPTH); // Any depth, any type
+    Mat m2 = cv::imread(fNamePhase,-1*CV_LOAD_IMAGE_ANYDEPTH); // Any depth, any type
+    if (m1.rows ==0 || m2.rows==0)
+    {
+        std::cout << "ERROR - images not found!"<<std::endl;
+        return;
+    }
+    cv::Mat complexPlanes[] = {cv::Mat::zeros(m1.rows, m1.cols, m1.type()), cv::Mat::zeros(m1.rows, m1.cols, m1.type())};
+    complexPlanes[0] = m1; complexPlanes[1] = m2;
+    cv::merge(complexPlanes,2,output);
+    Mat tmpMat = Mat::zeros(output.rows,output.cols,output.type());
+    if (rwMode & RW_MODE_AMP_PHASE)
+    {
+        complexAmpPhaseToRealImag(output,tmpMat);
+        tmpMat.copyTo(output);
+    }
+
+    
+}
+// Mouse callback for showImg
 void onMouse( int event, int x, int y, int, void* param )
 {
 
@@ -358,7 +418,7 @@ void onMouse( int event, int x, int y, int, void* param )
 		return;
 	}
 }
-
+// Display a complex image
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 {
    if (m.channels() == 2) // Ensure Complex Matrix
@@ -424,6 +484,7 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 		std::cout << "ERROR ( cvComplex::shotComplexImg ) : Input Mat is not complex (m.channels() != 2)" << std::endl;
 }
 
+// Print information about a matrix
 void printMat(cv::Mat m, std::string title)
 {
 	std::cout << "cv::Mat " << title<<" properties:"<<std::endl;
@@ -432,6 +493,7 @@ void printMat(cv::Mat m, std::string title)
 	std::cout << "  type: "<<m.type()<<std::endl;
 }
 
+// Show a single-channel image
 void showImg(cv::Mat m, std::string windowTitle)
 {
    cv::Mat scaledImg, displayMat;

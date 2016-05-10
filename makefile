@@ -9,7 +9,7 @@ CLEANEXTS = o a
 INCLUDES = -I/usr/local/include/
 
 # define the C compiler to use
-CC = g++
+CC = clang++
 
 # define any compile-time flags
 CFLAGS= -std=c++14 -ggdb -Wall -pedantic
