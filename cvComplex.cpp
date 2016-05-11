@@ -14,6 +14,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "cvComplex.h"
+#include <stdio.h>
 #include <cmath>
 
 int16_t gv_cMap = -1; // Global Colormap Setting
@@ -192,7 +193,7 @@ void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
  * OUTPUT:
  *   cv::Mat& output:    Complex product of m1 and scalar
  */
-void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output)
+void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat output)
 {
    if (output.empty())
    	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
@@ -203,8 +204,8 @@ void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output)
     double* o_i = output.ptr<double>(i);      // Output
     for(int j = 0; j < m.cols; j++)
     {
-        o_i[j*2] = scaler * m_i[j*2]; // Real
-        o_i[j*2+1] = scaler * m_i[j*2+1]; // Real
+        o_i[j*2] = scaler.real() * m_i[j*2]; // Real
+        o_i[j*2+1] = scaler.imag() * m_i[j*2+1]; // Real
     }
 	}
 }

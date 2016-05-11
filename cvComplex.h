@@ -30,7 +30,7 @@ void maxComplexReal(cv::Mat& m, std::string label);
 void complexConj(const cv::Mat& m, cv::Mat& output);
 void complexAbs(const cv::Mat& m, cv::Mat& output);
 void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
-void complexScalarMultiply(double scaler, cv::Mat& m, cv::Mat output);
+void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat output);
 void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
 void complexInverse(const cv::Mat& m, cv::Mat& inverse);
 cv::Mat fftShiftS(cv::Mat m);
@@ -45,5 +45,6 @@ void onMouse( int event, int x, int y, int, void* param);
 void showImg(cv::Mat m, std::string windowTitle);
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle);
 void setColorMap(int16_t cMap);
+void printMat(cv::Mat m, std::string title);
 
 #endif
