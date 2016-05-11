@@ -203,9 +203,9 @@ void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat outp
     const double* m_i = m.ptr<double>(i);   // Input 1
     double* o_i = output.ptr<double>(i);      // Output
     for(int j = 0; j < m.cols; j++)
-    {
-        o_i[j*2] = scaler.real() * m_i[j*2]; // Real
-        o_i[j*2+1] = scaler.imag() * m_i[j*2+1]; // Real
+    {   
+        o_i[j*2] = scaler.real() * m_i[j*2] - scaler.imag() * m_i[j*2+1]; // Real
+        o_i[j*2+1] = scaler.imag() * m_i[j*2] + scaler.real() * m_i[j*2+1]; // Real
     }
 	}
 }
