@@ -25,16 +25,14 @@ extern const int16_t CMAP_MAX;
 extern const int16_t COLORMAP_NONE;
 
 // METHODS
-void circularShift(cv::Mat img, cv::Mat result, int x, int y);
+void circularShift(const cv::Mat& input, cv::Mat& output, int16_t x, int16_t y);
 void maxComplexReal(cv::Mat& m, std::string label);
-void complexConj(const cv::Mat& m, cv::Mat& output);
-void complexAbs(const cv::Mat& m, cv::Mat& output);
-void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
-void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat output);
-void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output);
-void complexInverse(const cv::Mat& m, cv::Mat& inverse);
-cv::Mat fftShiftS(cv::Mat m);
-cv::Mat ifftShiftS(cv::Mat m);
+void complexConj(const cv::Mat& input, cv::Mat& output);
+void complexAbs(const cv::Mat& input, cv::Mat& output);
+void complexMultiply(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output);
+void complexScalarMultiply(std::complex<double> scaler, cv::Mat& input, cv::Mat output);
+void complexDivide(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output);
+void complexInverse(const cv::Mat& input, cv::Mat& output);
 void fftShift(const cv::Mat& input, cv::Mat& output);
 void ifftShift(const cv::Mat& input, cv::Mat& output);
 void fft2(cv::Mat& input, cv::Mat& output);

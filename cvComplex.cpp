@@ -35,39 +35,47 @@ const int16_t COLORMAP_NONE = -1;
 using namespace cv;
 using namespace std;
 
-void circularShift(cv::Mat img, cv::Mat result, int x, int y){
-    int w = img.cols;
-    int h = img.rows;
+void circularShift(const cv::Mat& input, cv::Mat& output, int16_t x, int16_t y)
+{
+  // Reallocate input
+  Mat inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+  inputBuf = input.clone();
 
-    int shiftR = x % w;
-    int shiftD = y % h;
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, input.type());
 
-    if (shiftR < 0)//if want to shift in -x direction
-        shiftR += w;
+  int16_t w = inputBuf.cols;
+  int16_t h = inputBuf.rows;
 
-    if (shiftD < 0)//if want to shift in -y direction
-        shiftD += h;
+  int16_t shiftR = x % w;
+  int16_t shiftD = y % h;
 
-    cv::Rect gate1(0, 0, w-shiftR, h-shiftD);//rect(x, y, width, height)
-    cv::Rect out1(shiftR, shiftD, w-shiftR, h-shiftD);
+  if (shiftR < 0)//if want to shift in -x direction
+      shiftR += w;
 
-    cv::Rect gate2(w-shiftR, 0, shiftR, h-shiftD);
-    cv::Rect out2(0, shiftD, shiftR, h-shiftD);
+  if (shiftD < 0)//if want to shift in -y direction
+      shiftD += h;
 
-    cv::Rect gate3(0, h-shiftD, w-shiftR, shiftD);
-    cv::Rect out3(shiftR, 0, w-shiftR, shiftD);
+  cv::Rect gate1(0, 0, w-shiftR, h-shiftD);//rect(x, y, width, height)
+  cv::Rect out1(shiftR, shiftD, w-shiftR, h-shiftD);
 
-    cv::Rect gate4(w-shiftR, h-shiftD, shiftR, shiftD);
-    cv::Rect out4(0, 0, shiftR, shiftD);
+  cv::Rect gate2(w-shiftR, 0, shiftR, h-shiftD);
+  cv::Rect out2(0, shiftD, shiftR, h-shiftD);
 
-    cv::Mat shift1 = img(gate1);
-	cv::Mat shift2 = img(gate2);
-	cv::Mat shift3 = img(gate3);
-	cv::Mat shift4 = img(gate4);
-	shift1.copyTo(cv::Mat(result, out1));
-	shift2.copyTo(cv::Mat(result, out2));
-	shift3.copyTo(cv::Mat(result, out3));
-	shift4.copyTo(cv::Mat(result, out4));
+  cv::Rect gate3(0, h-shiftD, w-shiftR, shiftD);
+  cv::Rect out3(shiftR, 0, w-shiftR, shiftD);
+
+  cv::Rect gate4(w-shiftR, h-shiftD, shiftR, shiftD);
+  cv::Rect out4(0, 0, shiftR, shiftD);
+
+  cv::Mat shift1 = inputBuf(gate1);
+	cv::Mat shift2 = inputBuf(gate2);
+	cv::Mat shift3 = inputBuf(gate3);
+	cv::Mat shift4 = inputBuf(gate4);
+	shift1.copyTo(cv::Mat(output, out1));
+	shift2.copyTo(cv::Mat(output, out2));
+	shift3.copyTo(cv::Mat(output, out3));
+	shift4.copyTo(cv::Mat(output, out4));
 }
 
 void maxComplexReal(cv::Mat& m, std::string label)
@@ -79,17 +87,26 @@ void maxComplexReal(cv::Mat& m, std::string label)
       std::cout << "Max/Min values of " <<label << " are: " << maxVal << ", " << minVal << std::endl;
 }
 
-void complexConj(const cv::Mat& m, cv::Mat& output)
+void complexConj(const cv::Mat& input, cv::Mat& output)
 {
-   if (output.empty())
-   	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
 
-	for(int i = 0; i < m.rows; i++) // loop through y
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
+	for(int i = 0; i < input.rows; i++) // loop through y
 	{
-    const double* m_i = m.ptr<double>(i);  // Input
+    const double* m_i = input.ptr<double>(i);  // Input
     double* o_i = output.ptr<double>(i);   // Output
 
-    for(int j = 0; j < m.cols; j++)
+    for(int j = 0; j < input.cols; j++)
     {
         o_i[j*2] = (double) m_i[j*2];
         o_i[j*2+1] = (double) -1.0 * m_i[j*2+1];
@@ -97,17 +114,27 @@ void complexConj(const cv::Mat& m, cv::Mat& output)
 	}
 }
 
-void complexAngle(const cv::Mat& m, cv::Mat& output)
+void complexAngle(const cv::Mat& input, cv::Mat& output)
 {
-  if (output.empty())
-   output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
 
-  for(int i = 0; i < m.rows; i++) // loop through y
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
+
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
+  for(int i = 0; i < input.rows; i++) // loop through y
  	{
-     const double* m_i = m.ptr<double>(i);  // Input
+     const double* m_i = input.ptr<double>(i);  // Input
      double* o_i = output.ptr<double>(i);   // Output
 
-     for(int j = 0; j < m.cols; j++)
+     for(int j = 0; j < input.cols; j++)
      {
          o_i[2*j] = (double) atan2(m_i[j*2+1],m_i[j*2]);
          o_i[j*2+1] = 0.0;
@@ -115,18 +142,28 @@ void complexAngle(const cv::Mat& m, cv::Mat& output)
  	}
 }
 
-void complexAbs(const cv::Mat& m, cv::Mat& output)
+void complexAbs(const cv::Mat& input, cv::Mat& output)
 {
 
-   if (output.empty())
-   	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
 
-	for(int i = 0; i < m.rows; i++) // loop through y
+  // Ensure output is not empty
+  if (output.empty())
+      output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
+	for(int i = 0; i < input.rows; i++) // loop through y
 	{
-    const double* m_i = m.ptr<double>(i);  // Input
+    const double* m_i = input.ptr<double>(i);  // Input
     double* o_i = output.ptr<double>(i);   // Output
 
-    for(int j = 0; j < m.cols; j++)
+    for(int j = 0; j < input.cols; j++)
     {
 
         o_i[j*2] = (double) std::sqrt(m_i[j*2] * m_i[j*2] + m_i[j*2+1] * m_i[j*2+1]);
@@ -135,18 +172,28 @@ void complexAbs(const cv::Mat& m, cv::Mat& output)
 	}
 }
 
-void complexAmpPhaseToRealImag(const cv::Mat& m, cv::Mat& output)
+void complexAmpPhaseToRealImag(const cv::Mat& input, cv::Mat& output)
 {
 
-   if (output.empty())
-   	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
 
-	for(int i = 0; i < m.rows; i++) // loop through y
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
+
+	for(int i = 0; i < input.rows; i++) // loop through y
 	{
-    const double* m_i = m.ptr<double>(i);  // Input
+    const double* m_i = input.ptr<double>(i);  // Input
     double* o_i = output.ptr<double>(i);   // Output
 
-    for(int j = 0; j < m.cols; j++)
+    for(int j = 0; j < input.cols; j++)
     {
 
         o_i[j*2] = (double)m_i[j*2]*sin((double)m_i[j*2+1]);
@@ -166,17 +213,43 @@ void complexAmpPhaseToRealImag(const cv::Mat& m, cv::Mat& output)
  * OUTPUT:
  *   cv::Mat& output:    Complex Product of m1 and m2
  */
-void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
+void complexMultiply(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output)
 {
-   if (output.empty())
-   	output = cv::Mat::zeros(m1.rows, m1.cols, CV_64FC2);
+  // Check if matricies are of same size and type
+  if (!((input1.size() == input2.size()) && (input1.type() == input2.type())))
+  {
+    std::cout << "ERROR - matricies are of different size!" << std::endl;
+    return;
+  }
+
+  Mat inputBuf1, inputBuf2;
+  if (inputBuf1.data == output.data)
+  {
+    inputBuf1 = cv::Mat::zeros(input1.rows,input1.cols,input1.type());
+    inputBuf1 = input1.clone();
+  }else{
+    inputBuf1 = input1; // Shallow copy
+  }
+
+  if (inputBuf2.data == output.data)
+  {
+    inputBuf2 = cv::Mat::zeros(input2.rows,input2.cols,input2.type());
+    inputBuf2 = input2.clone();
+  }else{
+    inputBuf2 = input2; // Shallow copy
+  }
+
+  // Ensure output is not empty
+  if (output.empty())
+      output = cv::Mat::zeros(input1.rows, input1.cols, CV_64FC2);
+
    // (a + bi) * (c + di) = (ac - bd) + (ad + bc)i
-	for(int i = 0; i < m1.rows; i++) // loop through y
+	for(int i = 0; i < inputBuf1.rows; i++) // loop through y
 	{
-    const double* m1_i = m1.ptr<double>(i);   // Input 1
-    const double* m2_i = m2.ptr<double>(i);   // Input 2
+    const double* m1_i = inputBuf1.ptr<double>(i);   // Input 1
+    const double* m2_i = inputBuf2.ptr<double>(i);   // Input 2
     double* o_i = output.ptr<double>(i);      // Output
-    for(int j = 0; j < m1.cols; j++)
+    for(int j = 0; j < inputBuf1.cols; j++)
     {
         o_i[j*2] = (m1_i[j*2] * m2_i[j*2]) - (m1_i[j*2+1] * m2_i[j*2+1]);    // Real
         o_i[j*2+1] = (m1_i[j*2] * m2_i[j*2+1]) + (m1_i[j*2+1] * m2_i[j*2]);  // Imaginary
@@ -193,17 +266,27 @@ void complexMultiply(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
  * OUTPUT:
  *   cv::Mat& output:    Complex product of m1 and scalar
  */
-void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat output)
+void complexScalarMultiply(std::complex<double> scaler, cv::Mat& input, cv::Mat output)
 {
-   if (output.empty())
-   	output = cv::Mat::zeros(m.rows, m.cols, CV_64FC2);
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
+
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
    // (a + bi) * (c + di) = (ac - bd) + (ad + bc)i
-	for(int i = 0; i < m.rows; i++) // loop through y
+	for(int i = 0; i < input.rows; i++) // loop through y
 	{
-    const double* m_i = m.ptr<double>(i);   // Input 1
+    const double* m_i = input.ptr<double>(i);   // Input 1
     double* o_i = output.ptr<double>(i);      // Output
-    for(int j = 0; j < m.cols; j++)
-    {   
+    for(int j = 0; j < input.cols; j++)
+    {
         o_i[j*2] = scaler.real() * m_i[j*2] - scaler.imag() * m_i[j*2+1]; // Real
         o_i[j*2+1] = scaler.imag() * m_i[j*2] + scaler.real() * m_i[j*2+1]; // Real
     }
@@ -221,17 +304,43 @@ void complexScalarMultiply(std::complex<double> scaler, cv::Mat& m, cv::Mat outp
  * OUTPUT:
  *   cv::Mat& output:    Complex Product of m1 and m2
  */
-void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
+void complexDivide(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output)
 {
-   if (output.empty())
-   	output = cv::Mat::zeros(m1.rows, m1.cols, CV_64FC2);
+  // Check if matricies are of same size and type
+  if (!((input1.size() == input2.size()) && (input1.type() == input2.type())))
+  {
+    std::cout << "ERROR - matricies are of different size!" << std::endl;
+    return;
+  }
+
+  Mat inputBuf1, inputBuf2;
+  if (inputBuf1.data == output.data)
+  {
+    inputBuf1 = cv::Mat::zeros(input1.rows,input1.cols,input1.type());
+    inputBuf1 = input1.clone();
+  }else{
+    inputBuf1 = input1; // Shallow copy
+  }
+
+  if (inputBuf2.data == output.data)
+  {
+    inputBuf2 = cv::Mat::zeros(input2.rows,input2.cols,input2.type());
+    inputBuf2 = input2.clone();
+  }else{
+    inputBuf2 = input2; // Shallow copy
+  }
+
+  // Ensure output is not empty
+  if (output.empty())
+      output = cv::Mat::zeros(input1.rows, input1.cols, CV_64FC2);
+
    // (a+bi) / (c+di) = (ac+bd) / (c^2+d^2) + (bc-ad) / (c^2+d^2) * i
-	for(int i = 0; i < m1.rows; i++) // loop through y
+	for(int i = 0; i < inputBuf1.rows; i++) // loop through y
 	{
-    const double* m1_i = m1.ptr<double>(i);   // Input 1
-    const double* m2_i = m2.ptr<double>(i);   // Input 2
+    const double* m1_i = inputBuf1.ptr<double>(i);   // Input 1
+    const double* m2_i = inputBuf2.ptr<double>(i);   // Input 2
     double* o_i = output.ptr<double>(i);      // Output
-    for(int j = 0; j < m1.cols; j++)
+    for(int j = 0; j < inputBuf1.cols; j++)
     {
         o_i[j*2] = ((m1_i[j*2] * m2_i[j*2]) + (m1_i[j*2+1] * m2_i[j*2+1])) / (m2_i[j*2] * m2_i[j*2] + m2_i[j*2+1] * m2_i[j*2+1]); // Real
         o_i[j*2+1] = ((m1_i[j*2+1] * m2_i[j*2]) - (m1_i[j*2] * m2_i[j*2+1])) / (m2_i[j*2] * m2_i[j*2] + m2_i[j*2+1] * m2_i[j*2+1]);  // Imaginary
@@ -240,17 +349,27 @@ void complexDivide(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 }
 
 
-void complexInverse(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
+void complexInverse(const cv::Mat& input, cv::Mat& output)
 {
-   if (output.empty())
-   	output = cv::Mat::zeros(m1.rows, m1.cols, CV_64FC2);
+  Mat inputBuf;
+  if (inputBuf.data == output.data)
+  {
+    inputBuf = cv::Mat::zeros(input.rows,input.cols,input.type());
+    inputBuf = input.clone();
+  }else{
+    inputBuf = input; // Shallow copy
+  }
+
+  if (output.empty())
+    output = cv::Mat::zeros(input.rows, input.cols, CV_64FC2);
+
    // (a+bi) / (c+di) = (ac+bd) / (c^2+d^2) + (bc-ad) / (c^2+d^2) * i
-	for(int i = 0; i < m1.rows; i++) // loop through y
+	for(int i = 0; i < input.rows; i++) // loop through y
 	{
     //const double* m1_i = m1.ptr<double>(i);   // Input 1
-    const double* m2_i = m2.ptr<double>(i);   // Input 2
+    const double* m2_i = input.ptr<double>(i);   // Input 2
     double* o_i = output.ptr<double>(i);      // Output
-    for(int j = 0; j < m1.cols; j++)
+    for(int j = 0; j < input.cols; j++)
     {
         o_i[j*2] = ((m2_i[j*2]) + ( m2_i[j*2+1])) / (m2_i[j*2] * m2_i[j*2] + m2_i[j*2+1] * m2_i[j*2+1]); // Real
         o_i[j*2+1] = (( m2_i[j*2]) - (m2_i[j*2+1])) / (m2_i[j*2] * m2_i[j*2] + m2_i[j*2+1] * m2_i[j*2+1]);  // Imaginary
@@ -258,32 +377,15 @@ void complexInverse(const cv::Mat& m1, const cv::Mat& m2, cv::Mat& output)
 	}
 }
 
-//end depreciation
-
 void fftShift(const cv::Mat& input, cv::Mat& output)
 {
-	if ((input.data == output.data) || output.empty())
-	{
-		cv::Mat shifted = cv::Mat::zeros(input.rows, input.cols, input.type());
-		circularShift(input, shifted, std::ceil((double) input.cols/2), std::ceil((double) input.rows/2));
-		output = shifted.clone();
-	}
-	else
 	 	circularShift(input, output, std::ceil((double) input.cols/2), std::ceil((double) input.rows/2));
 }
 
 void ifftShift(const cv::Mat& input, cv::Mat& output)
 {
-      if ((input.data == output.data) || output.empty())
-      {
-      	 cv::Mat shifted = cv::Mat::zeros(input.rows, input.cols, input.type());
-         circularShift(input, shifted, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
-         output = shifted.clone();
-      }
-      else
-       	circularShift(input, output, std::floor((double) input.cols/2), std::floor((double) input.rows/2));
+	 	circularShift(input, output, std::floor((double) input.cols/2), std::ceil((double) input.rows/2));
 }
-
 // Opencv fft implimentation
 void fft2(cv::Mat& input, cv::Mat& output)
 {
