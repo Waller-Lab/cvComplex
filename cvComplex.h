@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/contrib/contrib.hpp"
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -24,6 +25,9 @@ extern const int16_t CMAP_MIN;
 extern const int16_t CMAP_MAX;
 extern const int16_t COLORMAP_NONE;
 
+extern const int16_t COLORIMAGE_REAL;
+extern const int16_t COLORIMAGE_COMPLEX;
+
 // METHODS
 void circularShift(const cv::Mat& input, cv::Mat& output, int16_t x, int16_t y);
 void maxComplexReal(cv::Mat& m, std::string label);
@@ -40,8 +44,9 @@ void ifft2(cv::Mat& input, cv::Mat& output);
 void complex_imread(std::string fNameAmp, std::string fNamePhase, cv::Mat& output, int16_t rwMode);
 void complex_imwrite(cv::Mat& m1,std::string fname, int16_t rwMode);
 void onMouse( int event, int x, int y, int, void* param);
-void showImg(cv::Mat m, std::string windowTitle);
-void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle);
+void showImg(cv::Mat m, std::string windowTitle, int16_t gv_cMap);
+void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle, int16_t gv_cMap);
+void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX);
 void setColorMap(int16_t cMap);
 void printMat(cv::Mat m, std::string title);
 

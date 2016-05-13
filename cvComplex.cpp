@@ -13,6 +13,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/contrib/contrib.hpp"
 #include "cvComplex.h"
 #include <stdio.h>
 #include <cmath>
@@ -31,6 +32,9 @@ const int16_t RW_MODE_REAL_IMAG = 2;
 const int16_t CMAP_MIN = 0;
 const int16_t CMAP_MAX = 11;
 const int16_t COLORMAP_NONE = -1;
+
+const int16_t COLORIMAGE_REAL = 0;
+const int16_t COLORIMAGE_COMPLEX = 1;
 
 using namespace cv;
 using namespace std;
@@ -508,7 +512,7 @@ void onMouse( int event, int x, int y, int, void* param )
 	}
 }
 // Display a complex image
-void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
+void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle, int16_t gv_cMap)
 {
    if (m.channels() == 2) // Ensure Complex Matrix
    {
@@ -523,19 +527,19 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
             windowTitle = windowTitle + " Magnitude";
             //cv::log(planes[0],planes[0]);
-            showImg(planes[0], windowTitle);
+            showImg(planes[0], windowTitle, gv_cMap);
 				break;
 			}
 			case (SHOW_COMPLEX_REAL):
 			{
 			   std::string reWindowTitle = windowTitle + " Real";
-            showImg(planes[0], reWindowTitle);
+            showImg(planes[0], reWindowTitle, gv_cMap);
 				break;
 			}
 			case (SHOW_COMPLEX_IMAGINARY):
 			{
 				std::string imWindowTitle = windowTitle + " Imaginary";
-            showImg(planes[1], imWindowTitle);
+            showImg(planes[1], imWindowTitle, gv_cMap);
 				break;
 			}
       case (SHOW_AMP_PHASE):
@@ -550,8 +554,8 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
         complexAbs(m,m);
         cv::split(m, planes);
 
-        showImg(planes[0], amWindowTitle);
-        showImg(planes2[0], phWindowTitle);
+        showImg(planes[0], amWindowTitle, gv_cMap);
+        showImg(planes2[0], phWindowTitle, gv_cMap);
         break;
       }
 			default:
@@ -560,8 +564,8 @@ void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
 				std::string reWindowTitle = windowTitle + " Real";
 				std::string imWindowTitle = windowTitle + " Imaginary";
 
-				showImg(planes[0], reWindowTitle);
-				showImg(planes[1], imWindowTitle);
+				showImg(planes[0], reWindowTitle, gv_cMap);
+				showImg(planes[1], imWindowTitle, gv_cMap);
 
 				break;
 			}
@@ -583,45 +587,73 @@ void printMat(cv::Mat m, std::string title)
 }
 
 // Show a single-channel image
-void showImg(cv::Mat m, std::string windowTitle)
+void showImg(cv::Mat m, std::string windowTitle, int16_t gv_cMap)
 {
-   cv::Mat scaledImg, displayMat;
-   cv::normalize(m, scaledImg, 0, 1, CV_MINMAX);
-   scaledImg.convertTo(scaledImg,CV_32FC1);
-   cvtColor(scaledImg, displayMat, CV_GRAY2RGB);
-   /*
-	cv::normalize(m, scaledMat, 0,255, CV_MINMAX);
-	scaledMat.convertTo(scaledMat, CV_8U);
-
-	if (gv_cMap >= 0)
-		cv::applyColorMap(scaledMat, displayMat, gv_cMap);
+	
+	cv::Mat displayMat;
+	
+   if (gv_cMap >= cv::COLORMAP_AUTUMN && gv_cMap <= cv::COLORMAP_HOT)
+   {
+	   cv::Mat scaledMat;
+	   cv::normalize(m, scaledMat, 0, 255, CV_MINMAX);
+	   scaledMat.convertTo(scaledMat, CV_8U);
+	   cv::applyColorMap(scaledMat, displayMat, gv_cMap);
+   }   
    else
-   	displayMat = scaledMat;
-   	*/
+   {
+	   cv::Mat scaledImg;
+	   cv::normalize(m, scaledImg, 0, 1, CV_MINMAX);
+	   scaledImg.convertTo(scaledImg,CV_32FC1);
+	   cvtColor(scaledImg, displayMat, CV_GRAY2RGB);
+   }
+   	
     cv::startWindowThread();
     cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
     cv::setMouseCallback(windowTitle, onMouse, &m);;
-	  cv::imshow(windowTitle, displayMat);
-	  cv::waitKey();
-	  cv::destroyAllWindows();
+	cv::imshow(windowTitle, displayMat);
+	cv::waitKey();
+	cv::destroyAllWindows();
+	
 }
 
+void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
+{
+	cv::Mat displayMat, ImgCC;
+	
+	if(REAL_COMPLEX == COLORIMAGE_REAL)
+	{
+		cv::merge(ImgC,3,ImgCC);
+	}
+	else
+	{
+	    cv::Mat ImgCC_buff[] = {cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
+			                    cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
+		    					cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
+		cv::Mat ImgCC_buff2[] = {cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
+				  		         cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
+								 
+		cv::split(ImgC[0],ImgCC_buff2);		
+		ImgCC_buff[0] = ImgCC_buff2[0].clone();
+		cv::split(ImgC[1],ImgCC_buff2);
+		ImgCC_buff[1] = ImgCC_buff2[0].clone();
+		cv::split(ImgC[2],ImgCC_buff2);
+		ImgCC_buff[2] = ImgCC_buff2[0].clone();
+		cv::merge(ImgCC_buff,3,ImgCC);
+	}
+	  
+	  cv::normalize(ImgCC, displayMat, 0, 1, CV_MINMAX);
+      displayMat.convertTo(displayMat,CV_64FC3);
 
-/*
-    COLORMAP_AUTUMN = 0,
-    COLORMAP_BONE = 1,
-    COLORMAP_JET = 2,
-    COLORMAP_WINTER = 3,
-    COLORMAP_RAINBOW = 4,
-    COLORMAP_OCEAN = 5,
-    COLORMAP_SUMMER = 6,
-    COLORMAP_SPRING = 7,
-    COLORMAP_COOL = 8,
-    COLORMAP_HSV = 9,
-    COLORMAP_PINK = 10,
-    COLORMAP_HOT = 11
+      cv::startWindowThread();
+      cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
+      cv::setMouseCallback(windowTitle, onMouse, ImgC);;
+  	  cv::imshow(windowTitle, displayMat);
+  	  cv::waitKey();
+  	  cv::destroyAllWindows();
+	  
+}
 
-void setColorMap(int16_t cMap)
+/*void setColorMap(int16_t cMap)
 {
 	if (cMap >= CMAP_MIN && cMap <= CMAP_MAX)
 		gv_cMap = cMap;
