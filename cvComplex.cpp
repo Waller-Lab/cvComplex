@@ -450,6 +450,18 @@ void onMouse( int event, int x, int y, int, void* param )
 		return;
 	}
 }
+
+// Compatability with previous versions
+void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle)
+{
+  showComplexImg(m, displayFlag, windowTitle,-1);
+}
+
+void showImg(cv::Mat m, std::string windowTitle)
+{
+  showImg(m,windowTitle,-1);
+}
+
 // Display a complex image
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle, int16_t gv_cMap)
 {
@@ -528,16 +540,16 @@ void printMat(cv::Mat m, std::string title)
 // Show a single-channel image
 void showImg(cv::Mat m, std::string windowTitle, int16_t gv_cMap)
 {
-	
+
 	cv::Mat displayMat;
-	
+
    if (gv_cMap >= cv::COLORMAP_AUTUMN && gv_cMap <= cv::COLORMAP_HOT)
    {
 	   cv::Mat scaledMat;
 	   cv::normalize(m, scaledMat, 0, 255, CV_MINMAX);
 	   scaledMat.convertTo(scaledMat, CV_8U);
 	   cv::applyColorMap(scaledMat, displayMat, gv_cMap);
-   }   
+   }
    else
    {
 	   cv::Mat scaledImg;
@@ -545,20 +557,20 @@ void showImg(cv::Mat m, std::string windowTitle, int16_t gv_cMap)
 	   scaledImg.convertTo(scaledImg,CV_32FC1);
 	   cvtColor(scaledImg, displayMat, CV_GRAY2RGB);
    }
-   	
+
     cv::startWindowThread();
     cv::namedWindow(windowTitle, cv::WINDOW_NORMAL);
     cv::setMouseCallback(windowTitle, onMouse, &m);;
 	cv::imshow(windowTitle, displayMat);
 	cv::waitKey();
 	cv::destroyAllWindows();
-	
+
 }
 
 void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
 {
 	cv::Mat displayMat, ImgCC;
-	
+
 	if(REAL_COMPLEX == COLORIMAGE_REAL)
 	{
 		cv::merge(ImgC,3,ImgCC);
@@ -570,8 +582,8 @@ void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
 		    					cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
 		cv::Mat ImgCC_buff2[] = {cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
 				  		         cv::Mat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
-								 
-		cv::split(ImgC[0],ImgCC_buff2);		
+
+		cv::split(ImgC[0],ImgCC_buff2);
 		ImgCC_buff[0] = ImgCC_buff2[0].clone();
 		cv::split(ImgC[1],ImgCC_buff2);
 		ImgCC_buff[1] = ImgCC_buff2[0].clone();
@@ -579,7 +591,7 @@ void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
 		ImgCC_buff[2] = ImgCC_buff2[0].clone();
 		cv::merge(ImgCC_buff,3,ImgCC);
 	}
-	  
+
 	  cv::normalize(ImgCC, displayMat, 0, 1, CV_MINMAX);
       displayMat.convertTo(displayMat,CV_64FC3);
 
@@ -589,7 +601,7 @@ void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
   	  cv::imshow(windowTitle, displayMat);
   	  cv::waitKey();
   	  cv::destroyAllWindows();
-	  
+
 }
 
 /*void setColorMap(int16_t cMap)

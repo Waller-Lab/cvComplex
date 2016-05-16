@@ -45,7 +45,9 @@ void complex_imread(std::string fNameAmp, std::string fNamePhase, cv::Mat& outpu
 void complex_imwrite(cv::Mat& m1,std::string fname, int16_t rwMode);
 void onMouse( int event, int x, int y, int, void* param);
 void showImg(cv::Mat m, std::string windowTitle, int16_t gv_cMap);
+void showImg(cv::Mat m, std::string windowTitle);
 void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle, int16_t gv_cMap);
+void showComplexImg(cv::Mat m, int16_t displayFlag, std::string windowTitle);
 void showImgC(cv::Mat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX);
 void setColorMap(int16_t cMap);
 void printMat(cv::Mat m, std::string title);
