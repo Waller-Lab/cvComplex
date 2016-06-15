@@ -6,13 +6,14 @@ LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_l
 # Extensions to clean
 CLEANEXTS = o a
 
-INCLUDES = -I/usr/local/include/
-
+INCLUDES = -I/usr/local/include/ -I/usr/local/opt/opencv3/include
 # define the C compiler to use
 CC = clang++
 
 # define any compile-time flags
 CFLAGS= -std=c++14 -ggdb -Wall -pedantic
+
+LFLAGS= -L/usr/local/opt/opencv3/lib
 
 all: $(PROJECT)
 

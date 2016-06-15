@@ -10,13 +10,14 @@
  * Report bugs directly to zkphil@berkeley.edu
  */
 
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+//#include "opencv2/contrib.hpp"
 #include "cvComplex.h"
 #include <stdio.h>
 #include <cmath>
+///include openmp library 
 
 int16_t gv_cMap = -1; // Global Colormap Setting
 
@@ -201,7 +202,7 @@ void complexAmpPhaseToRealImag(const cv::Mat& input, cv::Mat& output)
  * OUTPUT:
  *   cv::Mat& output:    Complex Product of m1 and m2
  */
-void complexMultiply(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output)
+void complexMultiply(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& output)//elementwise multiplies
 {
   // Check if matricies are of same size and type
   if (!((input1.size() == input2.size()) && (input1.type() == input2.type())))
@@ -219,7 +220,7 @@ void complexMultiply(const cv::Mat& input1, const cv::Mat& input2, cv::Mat& outp
 	{
     const double* m1_i = input1.ptr<double>(i);   // Input 1
     const double* m2_i = input2.ptr<double>(i);   // Input 2
-    double* o_i = output.ptr<double>(i);      // Output
+    double* o_i = output.ptr<double>(i); // Output      
     for(int j = 0; j < input1.cols; j++)
     {
         real = (m1_i[j*2] * m2_i[j*2]) - (m1_i[j*2+1] * m2_i[j*2+1]);    // Real
