@@ -17,7 +17,7 @@
 #include "cvComplex.h"
 #include <stdio.h>
 #include <cmath>
-///include openmp library 
+//include openmp library 
 
 int16_t gv_cMap = -1; // Global Colormap Setting
 
