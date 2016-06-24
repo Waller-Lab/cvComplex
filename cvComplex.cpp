@@ -571,15 +571,15 @@ void showImg(cv::UMat m, std::string windowTitle, int16_t gv_cMap)
    {
 	   cv::UMat scaledMat;
 	   cv::normalize(m, scaledMat, 0, 255, CV_MINMAX);
-	   scaledMat.convertTo(scaledMat, CV_8U);
-	   cv::applyColorMap(scaledMat, displayMat, gv_cMap);
+	   scaledMat.convertTo(displayMat, CV_8U);
+	   cv::applyColorMap(displayMat, displayMat, gv_cMap);
    }
    else
    {
 	   cv::UMat scaledImg;
 	   cv::normalize(m, scaledImg, 0, 1, CV_MINMAX);
-	   scaledImg.convertTo(scaledImg,CV_32FC1);
-	   cvtColor(scaledImg, displayMat, CV_GRAY2RGB);
+	   scaledImg.convertTo(displayMat,CV_32FC1);
+	   cvtColor(displayMat, displayMat, CV_GRAY2RGB);
    }
 
     cv::startWindowThread();
@@ -588,7 +588,6 @@ void showImg(cv::UMat m, std::string windowTitle, int16_t gv_cMap)
 	cv::imshow(windowTitle, displayMat);
 	cv::waitKey();
 	cv::destroyAllWindows();
-
 }
 
 void showImgC(cv::UMat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
