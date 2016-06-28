@@ -36,6 +36,7 @@ int main(int argc, char** argv ){
 	if (argc < 1){
 			cout << "Error: Not enough inputs.\nUSAGE: ./fresnelProp image_filename refocus_distance" << endl; return 0;}
 
+
   // Turn on opencl
   cv::ocl::setUseOpenCL(true);
 
@@ -57,7 +58,11 @@ int main(int argc, char** argv ){
 	// Convolve with FT of image
 	cv::UMat img_Ft;
 	fft2(img, img_Ft);
+	showImg(img, "Image");
+	showComplexImg(img_Ft, SHOW_COMPLEX_MAG, "Ft of image");
 	fftShift(img_Ft,img_Ft);
+	//CPU and GPU start differing after this shift
+	showComplexImg(img_Ft, SHOW_COMPLEX_MAG, "Ft shift of image");
 
 	cv::UMat output_Ft;
 	complexMultiply(img_Ft, kernel, output_Ft);

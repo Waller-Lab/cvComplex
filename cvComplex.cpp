@@ -42,8 +42,12 @@ using namespace std;
 
 void circularShift(const cv::UMat& input, cv::UMat& output, int16_t x, int16_t y)
 {
+  
   if (output.empty())
     output = cv::UMat::zeros(input.rows, input.cols, input.type());
+
+  cv::Mat input1 = input.getMat(ACCESS_READ);
+  cv::Mat output1 = output.getMat(ACCESS_RW);
 
   int16_t w = input.cols;
   int16_t h = input.rows;
@@ -70,27 +74,35 @@ void circularShift(const cv::UMat& input, cv::UMat& output, int16_t x, int16_t y
   cv::Rect out4(0, 0, shiftR, shiftD);
 
   // Generate pointers
-  cv::UMat shift1, shift2, shift3, shift4;
+  cv::Mat shift1, shift2, shift3, shift4;
+  
   if (&input == &output) // Check if matricies have same pointer
   {
-    shift1 = input(gate1).clone();
-  	shift2 = input(gate2).clone();
-  	shift3 = input(gate3).clone();
-  	shift4 = input(gate4).clone();
+    shift1 = input1(gate1).clone();
+  	shift2 = input1(gate2).clone();
+  	shift3 = input1(gate3).clone();
+  	shift4 = input1(gate4).clone();
   }
   else // safe to shallow copy
   {
-    shift1 = input(gate1);
-    shift2 = input(gate2);
-    shift3 = input(gate3);
-    shift4 = input(gate4);
+    shift1 = input1(gate1);
+    shift2 = input1(gate2);
+    shift3 = input1(gate3);
+    shift4 = input1(gate4);
   }
 
+  /*
+  shift1 = input1(gate1).clone();
+  shift2 = input1(gate2).clone();
+  shift3 = input1(gate3).clone();
+  shift4 = input1(gate4).clone();
+  */
+
   // Copy to result
-	shift1.copyTo(cv::UMat(output, out1));
-	shift2.copyTo(cv::UMat(output, out2));
-	shift3.copyTo(cv::UMat(output, out3));
-	shift4.copyTo(cv::UMat(output, out4));
+	shift1.copyTo(cv::Mat(output1, out1));
+	shift2.copyTo(cv::Mat(output1, out2));
+	shift3.copyTo(cv::Mat(output1, out3));
+	shift4.copyTo(cv::Mat(output1, out4));
 }
 
 void maxComplexReal(cv::UMat& m, std::string label)
@@ -491,9 +503,10 @@ void showComplexImg(cv::UMat m, int16_t displayFlag, std::string windowTitle, in
 {
    if (m.channels() == 2) // Ensure Complex Matrix
    {
-
+    //Mat m1 = m.getMat(ACCESS_READ);
 		cv::UMat planes[] = {cv::UMat::zeros(m.rows, m.cols, m.type()), cv::UMat::zeros(m.rows, m.cols, m.type())};
-		splitUMat(m, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+		//cv::split(m1, planes);
+    splitUMat(m, planes);                   // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
 
 		switch(displayFlag)
 		{
@@ -501,7 +514,7 @@ void showComplexImg(cv::UMat m, int16_t displayFlag, std::string windowTitle, in
 			{
 				cv::magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
             windowTitle = windowTitle + " Magnitude";
-            //cv::log(planes[0],planes[0]);
+            cv::log(planes[0],planes[0]);
             showImg(planes[0], windowTitle, gv_cMap);
 				break;
 			}
