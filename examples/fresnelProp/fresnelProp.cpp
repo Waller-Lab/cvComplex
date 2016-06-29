@@ -37,6 +37,8 @@ int main(int argc, char** argv ){
 			cout << "Error: Not enough inputs.\nUSAGE: ./fresnelProp image_filename refocus_distance" << endl; return 0;}
 
 
+	clock_t t1, t2, t3, t4, t5, t6;
+	t1 = clock();		
   // Turn on opencl
   cv::ocl::setUseOpenCL(true);
 
@@ -58,11 +60,14 @@ int main(int argc, char** argv ){
 	// Convolve with FT of image
 	cv::UMat img_Ft;
 	fft2(img, img_Ft);
+	t2 = clock();
 	showImg(img, "Image");
 	showComplexImg(img_Ft, SHOW_COMPLEX_MAG, "Ft of image");
+	t3 = clock();
 	fftShift(img_Ft,img_Ft);
-	//CPU and GPU start differing after this shift
+	t4 = clock();
 	showComplexImg(img_Ft, SHOW_COMPLEX_MAG, "Ft shift of image");
+	t5 = clock();
 
 	cv::UMat output_Ft;
 	complexMultiply(img_Ft, kernel, output_Ft);
@@ -71,6 +76,9 @@ int main(int argc, char** argv ){
 	cv::UMat output;
 	ifft2(output_Ft, output );
 
+	t6 = clock();
+	float diff = ((float)t2-(float)t1 + (float)t4 - (float)t3 + (float)t6 - (float)t5)/CLOCKS_PER_SEC;
+	std::cout<<diff<<" seconds"<<std::endl;
 	showComplexImg(output, SHOW_COMPLEX_REAL, "Refocused Bug Hologram");
     std::cout << "done!" <<std::endl;
 }
