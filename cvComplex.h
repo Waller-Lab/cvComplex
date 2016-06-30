@@ -52,10 +52,9 @@ void showComplexImg(cv::UMat m, int16_t displayFlag, std::string windowTitle);
 void showImgC(cv::UMat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX);
 void setColorMap(int16_t cMap);
 void printMat(cv::UMat m, std::string title);
-void splitUMat( cv::UMat& input, cv::UMat * output);
 void printOclPlatformInfo();
 void mergeUMat( cv::UMat* input, int8_t channels, cv::UMat& output);
-void splitUMat( cv::UMat& input, cv::UMat * output);
+void splitUMat( cv::UMat& input, int8_t channels, cv::UMat * output);
 
 /******************************************************************************
   Compatability functions for older applicaitons which only use cv::Mat class

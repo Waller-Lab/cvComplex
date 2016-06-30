@@ -108,23 +108,37 @@ void circularShift(const cv::UMat& input, cv::UMat& output, int16_t x, int16_t y
 void maxComplexReal(cv::UMat& m, std::string label)
 {
       cv::UMat planes[] = {cv::UMat::zeros(m.rows, m.cols, m.type()), cv::UMat::zeros(m.rows, m.cols, m.type())};
-      splitUMat(m,planes);
+      splitUMat(m,2,planes);
       double minVal, maxVal;
       cv::minMaxLoc(planes[0], &minVal, &maxVal);
       std::cout << "Max/Min values of " <<label << " are: " << maxVal << ", " << minVal << std::endl;
 }
 
-void splitUMat( cv::UMat& input, cv::UMat * output)
+void splitUMat( cv::UMat& input, int8_t channels, cv::UMat * output)
 {
+  if ((*output).channels() != (int) channels) {
+    std::cout << "splitUMat: output matrix channels does not match channels argument" << std::endl;
+    std::cout << "output channels: " << (*output).channels() << " channels arg: " << (int) channels << std::endl;
+  }
   // Use standard cv::split for now, parallelize later
-  cv::Mat outputPlanes[] = {cv::Mat::zeros(input.rows, input.cols, input.type()), cv::Mat::zeros(input.rows, input.cols, input.type())};
+  cv::Mat* outputPlanes = new Mat[channels];
+  for (int i = 0; i < channels; i++) {
+    outputPlanes[i] = cv::Mat::zeros(input.rows, input.cols, input.type());
+  }
+
   cv::split(input.getMat(ACCESS_RW),outputPlanes);
   for (int8_t ch=0; ch<input.channels(); ch++)
     output[ch] = outputPlanes[ch].getUMat(ACCESS_RW);
+
+  delete[] outputPlanes;
 }
 
 void mergeUMat( cv::UMat* input, int8_t channels, cv::UMat& output)
 {
+  if ((*input).channels() != (int) channels) {
+    std::cout << "mergeUMat: input matrix channels does not match channels argument" << std::endl;
+    std::cout << "input channels: " << (*input).channels() << " channels arg: " << (int) channels << std::endl;
+  }
   // Use standard cv::merge for now, parallelize later 
   cv::Mat* inputPlanes = new Mat[channels];
   for (int i = 0; i < channels; i++) {
@@ -407,7 +421,7 @@ void complex_imwrite(cv::UMat& m1,std::string fname, int16_t rwMode)
     }
     else if (rwMode & RW_MODE_REAL_IMAG)
     {
-        splitUMat(m1,complexPlanes);
+        splitUMat(m1,2,complexPlanes);
         typeStr1 = "Real"; typeStr2 = "Imag";
     }
     cv::imwrite(fname+'_'+typeStr1,complexPlanes[0]);
@@ -449,7 +463,7 @@ void onMouse( int event, int x, int y, int, void* param )
 	cv::UMat *  planes= new cv::UMat[image.channels()];
 	for (int16_t ch=0; ch < image.channels(); ch++)
 		planes[ch] = cv::UMat(image.rows, image.cols, image.type());
-	splitUMat(image,planes);
+	splitUMat(image,image.channels(),planes);
 
 	switch (event)
 	{
@@ -510,7 +524,7 @@ void showComplexImg(cv::UMat m, int16_t displayFlag, std::string windowTitle, in
     //Mat m1 = m.getMat(ACCESS_READ);
 		cv::UMat planes[] = {cv::UMat::zeros(m.rows, m.cols, m.type()), cv::UMat::zeros(m.rows, m.cols, m.type())};
 		//cv::split(m1, planes);
-    splitUMat(m, planes);                   // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
+    splitUMat(m,2,planes);                   // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
 
 		switch(displayFlag)
 		{
@@ -539,12 +553,12 @@ void showComplexImg(cv::UMat m, int16_t displayFlag, std::string windowTitle, in
         cv::UMat m2;
         cv::UMat planes2[] = {cv::UMat::zeros(m.rows, m.cols, m.type()), cv::UMat::zeros(m.rows, m.cols, m.type())};
         complexAngle(m,m2);
-        splitUMat(m2, planes2);
+        splitUMat(m2,2,planes2);
 
         std::string amWindowTitle = windowTitle + " Amplitude";
         std::string phWindowTitle = windowTitle + " Phase";
         complexAbs(m,m);
-        splitUMat(m, planes);
+        splitUMat(m,2,planes);
 
         showImg(planes[0], amWindowTitle, gv_cMap);
         showImg(planes2[0], phWindowTitle, gv_cMap);
@@ -623,11 +637,11 @@ void showImgC(cv::UMat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
 		cv::UMat ImgCC_buff2[] = {cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
 				  		         cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
 
-		splitUMat(ImgC[0],ImgCC_buff2);
+		splitUMat(ImgC[0],2,ImgCC_buff2);
 		ImgCC_buff[0] = ImgCC_buff2[0].clone();
-		splitUMat(ImgC[1],ImgCC_buff2);
+		splitUMat(ImgC[1],2,ImgCC_buff2);
 		ImgCC_buff[1] = ImgCC_buff2[0].clone();
-		splitUMat(ImgC[2],ImgCC_buff2);
+		splitUMat(ImgC[2],2,ImgCC_buff2);
 		ImgCC_buff[2] = ImgCC_buff2[0].clone();
 		mergeUMat(ImgCC_buff,3,ImgCC);
 	}
