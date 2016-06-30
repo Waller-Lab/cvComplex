@@ -125,9 +125,11 @@ void splitUMat( cv::UMat& input, cv::UMat * output)
 
 void mergeUMat( cv::UMat* input, int8_t channels, cv::UMat& output)
 {
-  // Use standard cv::merge for now, parallelize later
-  cv::Mat inputPlanes[] = {cv::Mat::zeros(input[0].rows, input[0].cols, input[0].type()),
-    cv::Mat::zeros(input[0].rows, input[0].cols, input[0].type())};
+  // Use standard cv::merge for now, parallelize later 
+  cv::Mat* inputPlanes = new Mat[channels];
+  for (int i = 0; i < channels; i++) {
+    inputPlanes[i] = cv::Mat::zeros(input[0].rows, input[0].cols, input[0].type());
+  }
 
   for (int8_t ch=0; ch<channels; ch++)
     inputPlanes[ch] = input[ch].getMat(ACCESS_RW);
@@ -135,6 +137,8 @@ void mergeUMat( cv::UMat* input, int8_t channels, cv::UMat& output)
   cv::Mat outputMat;
   cv::merge(inputPlanes,channels,outputMat);
   output = outputMat.getUMat(ACCESS_RW);
+
+  delete[] inputPlanes;
 }
 
 /*
@@ -613,7 +617,7 @@ void showImgC(cv::UMat* ImgC, std::string windowTitle, int16_t REAL_COMPLEX)
 	}
 	else
 	{
-	    cv::UMat ImgCC_buff[] = {cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
+	   cv::UMat ImgCC_buff[] = {cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
 			                    cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),
 		    					cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1)};
 		cv::UMat ImgCC_buff2[] = {cv::UMat::zeros(ImgC[0].rows, ImgC[0].cols, CV_64FC1),

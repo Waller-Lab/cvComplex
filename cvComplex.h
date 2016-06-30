@@ -54,6 +54,8 @@ void setColorMap(int16_t cMap);
 void printMat(cv::UMat m, std::string title);
 void splitUMat( cv::UMat& input, cv::UMat * output);
 void printOclPlatformInfo();
+void mergeUMat( cv::UMat* input, int8_t channels, cv::UMat& output);
+void splitUMat( cv::UMat& input, cv::UMat * output);
 
 /******************************************************************************
   Compatability functions for older applicaitons which only use cv::Mat class
